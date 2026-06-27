@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -16,8 +17,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "sinhat273@gmail.com",          // Your Gmail
-        pass: "bbgs tpso tqvx dalt" // <-- Paste App Password here
+        user: process.env.EMAIL_USER,          // Your Gmail
+        pass: process.env.EMAIL_PASS 
     }
 });
 
@@ -41,9 +42,9 @@ app.post("/contact", async (req, res) => {
 
         await transporter.sendMail({
 
-            from: `"HEM Website" <sinhat273@gmail.com>`,
+            from: `"HEM Website" <${process.env.EMAIL_USER}>`,
 
-            to: "sinhat273@gmail.com", // Email where you want to receive enquiries
+            to: process.env.EMAIL_USER, // Email where you want to receive enquiries
 
             subject: `New Contact Form: ${subject}`,
 

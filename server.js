@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 require("dotenv").config();
 
 const app = express();
@@ -10,48 +10,30 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// =========================
-// CHANGE THESE DETAILS
-// =========================
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-     family: 4,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS 
-    }
-});
-
-// =========================
 // Home Route
-// =========================
-
 app.get("/", (req, res) => {
     res.send("🎉 HEM Utilities Backend is Running!");
 });
 
-// =========================
 // Contact Form Route
-// =========================
-
 app.post("/contact", async (req, res) => {
 
     const { name, email, subject, message } = req.body;
 
     try {
 
-        await transporter.sendMail({
+        const data = await resend.emails.send({
 
-            from: `"HEM Website" <${process.env.EMAIL_USER}>`,
+            from: "HEM Utilities <onboarding@resend.dev>",
 
-            to: process.env.EMAIL_USER, // Email where you want to receive enquiries
+            to: process.env.EMAIL_USER,
 
             subject: `New Contact Form: ${subject}`,
+
+            replyTo: email,
 
             html: `
                 <h2>New Contact Form Submission</h2>
@@ -68,6 +50,8 @@ app.post("/contact", async (req, res) => {
             `
         });
 
+        console.log(data);
+
         res.json({
             success: true,
             message: "Message sent successfully!"
@@ -75,7 +59,7 @@ app.post("/contact", async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -86,10 +70,7 @@ app.post("/contact", async (req, res) => {
 
 });
 
-// =========================
 // Start Server
-// =========================
-
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
